@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate seedfile for nf-binqc pipeline
 USAGE: python create_seedfile.py S3path_to_genome_folder extension_of_files local_seedfile_output
-EXAMPLE: python create_seedfile.py s3://nextflow-pipelines/nf-binqc/test/data fna ../test/test_20221201.seedfile.csv
+EXAMPLE: python create_seedfile.py s3://nextflow-pipelines/nf-binqc/test/data fna test/test_20221201.seedfile.csv
 
 # pip install -U cloudpathlib[s3] pandas
 """

@@ -1,6 +1,4 @@
-# NF-BINQC
-
-Requires that all the genomes in the `--fastas` location be in fasta format, with the same extension. By default, the pipeline assumes that they all have the extension `fna`. If this is not the case, please use the flag `--ext` to reflect the appropriate extension.
+# NF-BAKTA
 
 ## Seedfile format
 
@@ -11,22 +9,21 @@ Requires that all the genomes in the `--fastas` location be in fasta format, wit
 The helper script, [create_seedfile.py](bin/create_seedfile.py), will create the properly formatted seedfile for you if you can point it to an S3 path.
 
 ```bash
-cd nf-binqc/bin
-python create_seedfile.py s3://nextflow-pipelines/nf-binqc/test/data fna ../test/test_20221201.seedfile.csv
+cd nf-binqc
+python bin/create_seedfile.py s3://nextflow-pipelines/nf-binqc/test/data fna test/test_20221220_0.seedfile.csv
 ```
 
 ## Test
 
 ```bash
 aws batch submit-job \
-    --job-name nf-binqc-test \
+    --job-name nf-bakta-test-1 \
     --job-queue priority-maf-pipelines \
     --job-definition nextflow-production \
-    --container-overrides command=FischbachLab/nf-binqc,\
-"-r","sj-sdlc",\
-"--seedfile","s3://nextflow-pipelines/nf-binqc/test/test_20221201.seedfile.csv",\
+    --container-overrides command=FischbachLab/nf-bakta,\
+"--seedfile","s3://nextflow-pipelines/nf-bakta/00_Test/seedfiles/test_20221220_1.seedfile.csv",\
 "--project","00_Test",\
-"--prefix","20221205"
+"--prefix","20221220-1"
 ```
 
 ## Actual sample command

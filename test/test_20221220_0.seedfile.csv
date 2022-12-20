@@ -1,0 +1,3 @@
+genome_id,genome_path
+Collinsella-aerofaciens-ATCC-25986,s3://nextflow-pipelines/nf-binqc/test/data/Collinsella-aerofaciens-ATCC-25986.fna
+Ruminococcus-torques-ATCC-27756-MAF-2,s3://nextflow-pipelines/nf-binqc/test/data/Ruminococcus-torques-ATCC-27756-MAF-2.fna
