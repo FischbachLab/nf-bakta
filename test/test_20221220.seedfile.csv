@@ -1,0 +1,5 @@
+genome_id,genome_path
+Bacteroides-sp-3-1-19-MAF-2,s3://maf-users/Nathan_Johns/Scratch/Bacteroides-sp-3-1-19-MAF-2.fna
+Bacteroides-sp-9-1-42FAA-MAF-2,s3://maf-users/Nathan_Johns/Scratch/Bacteroides-sp-9-1-42FAA-MAF-2.fna
+Bifidobacterium-breve-JCM-1192-MAF-2,s3://maf-users/Nathan_Johns/Scratch/Bifidobacterium-breve-JCM-1192-MAF-2.fna
+Parabacteroides-distasonis-ATCC-8503-MAF-2,s3://maf-users/Nathan_Johns/Scratch/Parabacteroides-distasonis-ATCC-8503-MAF-2.fna
