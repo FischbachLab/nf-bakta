@@ -20,6 +20,12 @@ cd nf-bakta
 python bin/create_seedfile.py s3://maf-users/Nathan_Johns/Scratch/ fna test/test_20221220.seedfile.csv
 ```
 
+## Upload the seedfile to S3
+
+```bash
+aws s3 cp test/test_20221220_1.seedfile.csv s3://genomics-workflow-core/Results/Bakta/00_Test/seedfiles/test_20221220_1.seedfile.csv
+```
+
 ## Test
 
 ```bash
@@ -28,7 +34,7 @@ aws batch submit-job \
     --job-queue priority-maf-pipelines \
     --job-definition nextflow-production \
     --container-overrides command=FischbachLab/nf-bakta,\
-"--seedfile","s3://nextflow-pipelines/nf-bakta/00_Test/seedfiles/test_20221220_1.seedfile.csv",\
+"--seedfile","s3://genomics-workflow-core/Results/Bakta/00_Test/seedfiles/test_20221220_1.seedfile.csv",\
 "--project","00_Test",\
 "--prefix","20221220-1"
 ```
