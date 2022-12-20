@@ -4,7 +4,7 @@
 
 - comma delimited
 - two columns with headers: `genome_id`, `genome_path`
-- Example: [test_20221201.seedfile.csv](test/test_20221201.seedfile.csv)
+- Example: [test_20221220_0.seedfile.csv](test/test_20221220_0.seedfile.csv)
 
 The helper script, [create_seedfile.py](bin/create_seedfile.py), will create the properly formatted seedfile for you if you can point it to an S3 path.
 
