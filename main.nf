@@ -79,10 +79,10 @@ process BAKTA {
   output:
     path "${id}*.gbff"
     path "${id}*.faa"
+    path "${id}.sha256"
 
   script:
   """
-  
   bakta \\
     --db ${params.bakta_db} \\
     --verbose \\
@@ -92,8 +92,6 @@ process BAKTA {
     --skip-plot \\
     $assembly
   
-  # --output results
-  
-  sha256sum $assembly &> results/${id}.sha256
+  sha256sum $assembly &> ${id}.sha256
   """
 }
