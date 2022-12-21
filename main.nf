@@ -77,8 +77,8 @@ process BAKTA {
     tuple val(id), path(assembly) from genomes_ch
 
   output:
-    path "${id}.gbff"
-    path "${id}.faa"
+    path "${id}*.gbff"
+    path "${id}*.faa"
 
   script:
   """
