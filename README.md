@@ -10,21 +10,14 @@ The helper script, [create_seedfile.py](bin/create_seedfile.py), will create the
 
 ```bash
 cd nf-bakta
-python bin/create_seedfile.py s3://nextflow-pipelines/nf-bakta/test/data fna test/test_20221220_0.seedfile.csv
+python bin/create_seedfile.py \
+    -g s3://maf-users/Nathan_Johns/DBs/Segata_Genomes/Fastas/ \
+    -project UHGG_Annotation \
+    -prefix 20221221 \
+    --extension .fasta
 ```
 
-### OR
-
-```bash
-cd nf-bakta
-python bin/create_seedfile.py s3://maf-users/Nathan_Johns/Scratch/ fna test/test_20221220.seedfile.csv
-```
-
-## Upload the seedfile to S3
-
-```bash
-aws s3 cp test/test_20221220_1.seedfile.csv s3://genomics-workflow-core/Results/Bakta/00_Test/seedfiles/test_20221220_1.seedfile.csv
-```
+This helper script will also recommend a job submission command that you can use to launch your job using the seedfile that was just created.
 
 ## Test
 
