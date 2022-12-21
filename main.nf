@@ -89,6 +89,7 @@ process BAKTA {
     --prefix $id \\
     --compliant \\
     --threads ${task.cpus} \\
+    --skip-plot \\
     $assembly
 
   sha256sum $assembly &> results/${id}.sha256
