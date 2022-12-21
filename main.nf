@@ -77,19 +77,19 @@ process BAKTA {
     tuple val(id), path(assembly) from genomes_ch
 
   output:
-    path "results/${id}.*"
+    path "results"
 
   script:
   """
   bakta \\
     --db ${params.bakta_db} \\
     --verbose \\
-    --output results/ \\
+    --output results \\
     --prefix $id \\
     --compliant \\
-    --threads 4 \\
+    --threads ${task.cpus} \\
     $assembly
 
-  sha256sum $assembly &> ${id}.sha256
+  sha256sum $assembly &> results/${id}.sha256
   """
 }
