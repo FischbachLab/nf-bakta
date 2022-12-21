@@ -71,13 +71,14 @@ process BAKTA {
 
   container params.docker_container_bakta
 
-  publishDir "$outputBase/${id}"
+  publishDir "$outputBase/${id}", pattern: "*.{gbff,faa}"
 
   input:
     tuple val(id), path(assembly) from genomes_ch
 
   output:
-    path "results"
+    path "results/*gbff"
+    path "results/*faa"
 
   script:
   """
