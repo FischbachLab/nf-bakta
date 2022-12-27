@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Generate seedfile for nf-binqc pipeline
-USAGE: python create_seedfile.py S3path_to_genome_folder extension_of_files local_seedfile_output
-EXAMPLE: python create_seedfile.py s3://nextflow-pipelines/nf-binqc/test/data fna test/test_20221201.seedfile.csv
+"""Generate seedfile for nf-bakta pipeline
+USAGE: python create_seedfile.py -g S3path_to_genome_folder -e extension_of_files -project Project_Name -prefix Prefix_Name -s seedfile_name
+EXAMPLE: python create_seedfile.py -g s3://nextflow-pipelines/nf-bakta/test/data -e .fna -project 00_TEST -prefix 20221201 -s test_20221201.seedfile.csv
 
 # pip install -U cloudpathlib[s3] pandas
 """
@@ -57,7 +57,7 @@ def usage():
         "--extension",
         type=str,
         default=".fna",
-        help="extension of the genome files",
+        help="extension of the genome files. Please include the '.'",
     )
     parser.add_argument(
         "-s",
@@ -76,7 +76,7 @@ def generate_seedfile(genomes_dir: str, extension: str) -> pd.DataFrame:
     return pd.DataFrame(
         [
             {
-                "genome_id": str(genome.name).replace(f"{extension}", ""),
+                "genome_id": str(genome.name).replace(f"{extension}", "").rstrip("."),
                 "genome_path": str(genome),
             }
             for genome in genomes.glob(f"*{extension}")
@@ -113,16 +113,15 @@ def main():
 
     seedfile_df = generate_seedfile(args.genome_dir, args.extension)
     num_rows, _ = seedfile_df.shape
-    logging.info(f"seedfile contains paths to {num_rows} genomes")
+    logging.info(f"Seedfile contains paths to {num_rows} genomes")
 
     seedfile_s3path = upload_to_s3(
         seedfile_df, args.project, args.prefix, args.seedfile
     )
-    logging.info(f"seedfile uploaded here: {seedfile_s3path}")
+    logging.info(f"Seedfile has been uploaded here: {seedfile_s3path}")
 
     logging.info(
-        f"""
-    Submission command:\n
+        f"""Submission command:\n
 aws batch submit-job \\
     --job-name nf-bakta-{args.prefix} \\
     --job-queue priority-maf-pipelines \\
@@ -131,6 +130,11 @@ aws batch submit-job \\
 "--seedfile","{seedfile_s3path}",\\
 "--project","{args.project}",\\
 "--prefix","{args.prefix}"
+
+*NOTE* The above command assumes that you'll be running the code from the `main` branch.
+    If that is not the case, please add `"-r","branch-name"` to the submission command as well.
+    If you don't know what that means, this probably doesn't apply to you, please feel free to 
+    ignore this message.
     """
     )
 
