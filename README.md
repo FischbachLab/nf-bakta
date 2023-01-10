@@ -29,5 +29,9 @@ aws batch submit-job \
     --container-overrides command=FischbachLab/nf-bakta,\
 "--seedfile","s3://genomics-workflow-core/Results/Bakta/00_Test/seedfiles/test_20221220_1.seedfile.csv",\
 "--project","00_Test",\
-"--prefix","20221220-1"
+"--prefix","20221220-2"
 ```
+
+## Bakta Database
+
+The database for this pipeline is stored on our EFS at `/mnt/efs/databases/Bakta/db/v4.0`. This path is provided as the `bakta_db` parameter. Note that this path should not be staged within the pipleine, but just passed as a value. This is done because all containers have access to that path, i.e. it's already available/staged/mounted for the container to use.
