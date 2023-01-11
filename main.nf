@@ -83,15 +83,6 @@ process BAKTA {
 
   script:
   """
-  bakta \\
-    --db ${params.bakta_db} \\
-    --verbose \\
-    --prefix $id \\
-    --compliant \\
-    --threads ${task.cpus} \\
-    --skip-plot \\
-    $assembly
-  
-  sha256sum $assembly &> ${id}.sha256
+  run_bakta.sh ${id} $assembly ${task.cpus} ${params.bakta_db}
   """
 }
