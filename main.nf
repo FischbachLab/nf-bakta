@@ -77,9 +77,9 @@ process BAKTA {
     tuple val(id), path(assembly) from genomes_ch
 
   output:
-    path "${id}*.gbff"
-    path "${id}*.faa"
-    path "${id}.sha256"
+    path "${id}*.gbff", optional: true
+    path "${id}*.faa", optional: true
+    path "${id}.sha256", optional: true
 
   script:
   """
