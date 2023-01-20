@@ -67,21 +67,45 @@ def usage():
         default="",
         help="Name of the seedfile for the pipeline. By default, it is a combination of <PROJECT> and <PREFIX>",
     )
-
+    parser.add_argument(
+        "-r",
+        "--recursive",
+        action="store_true",
+        required=False,
+        default=False,
+        help="Search the S3 location recursively. [This might take more time]",
+    )
     return parser.parse_args()
 
 
-def generate_seedfile(genomes_dir: str, extension: str) -> pd.DataFrame:
+def generate_seedfile(
+    genomes_dir: str, extension: str, recursive: bool
+) -> pd.DataFrame:
     genomes = AnyPath(genomes_dir)
-    return pd.DataFrame(
-        [
-            {
-                "genome_id": str(genome.name).replace(f"{extension}", "").rstrip("."),
-                "genome_path": str(genome),
-            }
-            for genome in genomes.glob(f"*{extension}")
-        ]
-    )
+    if recursive:
+        return pd.DataFrame(
+            [
+                {
+                    "genome_id": str(genome.name)
+                    .replace(f"{extension}", "")
+                    .rstrip("."),
+                    "genome_path": str(genome),
+                }
+                for genome in genomes.rglob(f"*{extension}")
+            ]
+        )
+    else:
+        return pd.DataFrame(
+            [
+                {
+                    "genome_id": str(genome.name)
+                    .replace(f"{extension}", "")
+                    .rstrip("."),
+                    "genome_path": str(genome),
+                }
+                for genome in genomes.glob(f"*{extension}")
+            ]
+        )
 
 
 def upload_to_s3(
@@ -111,7 +135,7 @@ def main():
     )
     args = usage()
 
-    seedfile_df = generate_seedfile(args.genome_dir, args.extension)
+    seedfile_df = generate_seedfile(args.genome_dir, args.extension, args.recursive)
     num_rows, _ = seedfile_df.shape
     logging.info(f"Seedfile contains paths to {num_rows} genomes")
 
@@ -131,7 +155,7 @@ aws batch submit-job \\
 "--project","{args.project}",\\
 "--prefix","{args.prefix}"
 
-*NOTE* The above command assumes that you'll be running the code from the `main` branch.
+*NOTE*\n\tThe above command assumes that you'll be running the code from the `main` branch.
     If that is not the case, please add `"-r","branch-name"` to the submission command as well.
     If you don't know what that means, this probably doesn't apply to you, please feel free to 
     ignore this message.
