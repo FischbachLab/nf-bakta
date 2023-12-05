@@ -17,7 +17,7 @@ if (( num_seqs >= min_seqs )); then
     --prefix "${assembly_id}" \
     --compliant \
     --threads "${cpus}" \
-    --skip-plot \
+    # --skip-plot \
     "${assembly}"
 
     sha256sum "${assembly}" &> "${assembly_id}.sha256"
