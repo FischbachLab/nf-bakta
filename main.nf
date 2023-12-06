@@ -71,13 +71,13 @@ process BAKTA {
 
   container params.docker_container_bakta
 
-  publishDir "$outputBase/${id}"
+  publishDir "$outputBase/${id}", mode: 'copy', pattern: "${id}.*"
 
   input:
     tuple val(id), path(assembly) from genomes_ch
 
   output:
-    path "${id}*", optional: true
+    path "${id}*"
     // path "${id}*.gbff", optional: true
     // path "${id}*.faa", optional: true
     // path "${id}.sha256", optional: true
@@ -85,5 +85,7 @@ process BAKTA {
   script:
   """
   run_bakta.sh ${id} $assembly ${task.cpus} ${params.bakta_db}
+  echo "BAKTA finished"
+  ls ${id}.*
   """
 }
