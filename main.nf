@@ -86,6 +86,5 @@ process BAKTA {
   """
   run_bakta.sh ${id} $assembly ${task.cpus} ${params.bakta_db}
   echo "BAKTA finished"
-  ls ${id}.*
   """
 }
