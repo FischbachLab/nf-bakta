@@ -57,9 +57,9 @@ cd /mnt/efs/databases/Bakta/db
 mkdir v5.0
 docker container run \
     --rm \
-    -v /mnt/efs/databases/Bakta/db/v5.0:/db \
+    -v /mnt/efs/databases/Bakta/db/v5.1:/db \
     -u $(id -u):$(id -g) \
-    public.ecr.aws/biocontainers/bakta:1.9.1--pyhdfd78af_0 \
+    public.ecr.aws/biocontainers/bakta:1.9.2--pyhdfd78af_1 \
     bakta_db download --output /db --type full
 ```
 

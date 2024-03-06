@@ -1,5 +1,6 @@
 #!/usr/bin/env nextflow
-nextflow.enable.dsl=1
+nextflow.enable.dsl=2
+
 // If the user uses the --help flag, print the help text below
 params.help = false
 
@@ -36,33 +37,6 @@ if (params.seedfile == "") {
   exit 0
 }
 
-/*
- * Defines the pipeline inputs parameters (giving a default value for each for them)
- * Each of the following parameters can be specified as command line options
- */
-
-// TODO: @sunitj #1 Use seedfiles
-// def fnaGlob = "${params.fastas}/*.${params.ext}"
-// log.info"""Searching for file at this location: $fnaGlob""".stripIndent()
-genomes_ch = Channel.from(
-        file(
-            params.seedfile
-        ).splitCsv(
-            header: true,
-            sep: ","
-        )
-    ).filter {
-        r -> (r.genome_id != null)
-    }.ifEmpty {
-        exit 1, "Cannot find values in the 'genome_id' column: ${params.seedfile}"
-    }.filter {
-        r -> (r.genome_path != null)
-    }.ifEmpty {
-        exit 1, "Cannot find values in the 'genome_path' column: ${params.seedfile}"
-    }.map {
-        r -> [r["genome_id"], [r["genome_path"]]]
-    }
-
 def outputBase = "${params.outdir}/${params.project}/${params.prefix}"
 
 // Bakta
@@ -74,17 +48,40 @@ process BAKTA {
   publishDir "$outputBase/${id}", mode: 'copy', pattern: "${id}.*"
 
   input:
-    tuple val(id), path(assembly) from genomes_ch
+    tuple val(id), path(assembly)
 
   output:
     path "${id}*"
-    // path "${id}*.gbff", optional: true
-    // path "${id}*.faa", optional: true
-    // path "${id}.sha256", optional: true
 
   script:
   """
   run_bakta.sh ${id} $assembly ${task.cpus} ${params.bakta_db}
   echo "BAKTA finished"
   """
+}
+
+
+workflow {
+  // def fnaGlob = "${params.fastas}/*.${params.ext}"
+// log.info"""Searching for file at this location: $fnaGlob""".stripIndent()
+  genomes_ch = Channel.from(
+          file(
+              params.seedfile
+          ).splitCsv(
+              header: true,
+              sep: ","
+          )
+      ).filter {
+          r -> (r.genome_id != null)
+      }.ifEmpty {
+          exit 1, "Cannot find values in the 'genome_id' column: ${params.seedfile}"
+      }.filter {
+          r -> (r.genome_path != null)
+      }.ifEmpty {
+          exit 1, "Cannot find values in the 'genome_path' column: ${params.seedfile}"
+      }.map {
+          r -> [r["genome_id"], [r["genome_path"]]]
+      }
+
+  genomes_ch | BAKTA
 }
