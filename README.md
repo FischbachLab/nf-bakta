@@ -29,14 +29,13 @@ This helper script will also recommend a job submission command that you can use
 
 ```bash
 aws batch submit-job \
-    --job-name nf-bakta-v1-9-1-dbv5 \
+    --job-name nf-bakta-dsl2-test \
     --job-queue priority-maf-pipelines \
     --job-definition nextflow-production \
     --container-overrides command=FischbachLab/nf-bakta,\
-"-r","sj-update-db-v5",\
 "--seedfile","s3://genomics-workflow-core/Results/Bakta/00_Test/seedfiles/test_20221220_1.seedfile.csv",\
 "--project","00_Test",\
-"--prefix","20221220-2"
+"--prefix","20240306-dsl2"
 ```
 
 ## Bakta Database
@@ -57,9 +56,9 @@ cd /mnt/efs/databases/Bakta/db
 mkdir v5.0
 docker container run \
     --rm \
-    -v /mnt/efs/databases/Bakta/db/v5.1:/db \
+    -v /mnt/efs/databases/Bakta/db/v5.0:/db \
     -u $(id -u):$(id -g) \
-    public.ecr.aws/biocontainers/bakta:1.9.2--pyhdfd78af_1 \
+    public.ecr.aws/biocontainers/bakta:1.9.1--pyhdfd78af_0 \
     bakta_db download --output /db --type full
 ```
 
