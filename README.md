@@ -28,6 +28,7 @@ This helper script will also recommend a job submission command that you can use
 ## Test
 
 ### Local
+
 ```bash
 nextflow run main.nf \
     --seedfile test/local.seedfile.csv \
