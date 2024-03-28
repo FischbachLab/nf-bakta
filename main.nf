@@ -44,6 +44,7 @@ process BAKTA {
   tag "${id}"
 
   container params.docker_container_bakta
+  containerOptions "-v ${params.bakta_db}:/db:ro"
 
   publishDir "$outputBase/${id}", mode: 'copy', pattern: "${id}.*"
 
@@ -52,18 +53,70 @@ process BAKTA {
 
   output:
     path "${id}*"
+    tuple val(${id}), path "${id}.faa", emit: proteins_tuple
 
   script:
   """
-  run_bakta.sh ${id} $assembly ${task.cpus} ${params.bakta_db}
+  run_bakta.sh ${id} $assembly ${task.cpus} /db
   echo "BAKTA finished"
   """
 }
 
+// PFam
+process PFAMS {
+  tag "${id}"
+
+  container params.docker_container_pfam
+  containerOptions "-v ${params.pfam_db}:/db:ro"
+
+  publishDir "$outputBase/${id}/pfams", mode: 'copy', pattern: "${id}.*"
+
+  input:
+    tuple val(id), path(proteins)
+
+  output:
+    tuple val("domtblout"), val(id), path("${id}.domtbl.tsv"), emit: domtblout
+    tuple val("tblout"), val(id), path("${id}.tbl.tsv"), emit: tblout
+
+  script:
+  """
+  hmmsearch \\
+    --cut_ga \\
+    -Z 1000000 \\
+    --cpu ${task.cpus} \\
+    --acc \\
+    --noali \\
+    --notextw \\
+    --tblout ${id}.tbl.tsv \\
+    --domtblout ${id}.domtbl.tsv \\
+    -o HMMPfam.log \\
+    /db/Pfam-A.hmm ${proteins}
+
+  echo "PFAM finished"
+  """
+}
+
+process PARSE_PFAMS{
+  tag "${id}"
+
+  container params.docker_container_pfam
+
+  publishDir "$outputBase/${id}", mode: 'copy', pattern: "${id}.*"
+
+  input:
+    tuple val(format), val(id), path(input_file)
+
+  output:
+    path "${id}.*"
+
+  script:
+  """
+  parse_hmmsearch_output.py -f ${format} -i ${input_file} -o ${id}.cleaned_${format}.csv
+  echo "PARSE_PFAMS finished for ${input_file}"
+  """
+}
 
 workflow {
-  // def fnaGlob = "${params.fastas}/*.${params.ext}"
-// log.info"""Searching for file at this location: $fnaGlob""".stripIndent()
   genomes_ch = Channel.from(
           file(
               params.seedfile
@@ -84,4 +137,7 @@ workflow {
       }
 
   genomes_ch | BAKTA
+  BAKTA.out.proteins_tuple | PFAMS
+  PFAMS.out.domtblout | PARSE_PFAMS
+  PFAMS.out.tblout | PARSE_PFAMS
 }
