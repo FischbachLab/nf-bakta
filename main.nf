@@ -42,6 +42,8 @@ def outputBase = "${params.outdir}/${params.project}/${params.prefix}"
 // Bakta
 process BAKTA {
   tag "${id}"
+  
+  debug true
 
   container params.docker_container_bakta
   containerOptions "-v ${params.bakta_db}:/db:ro"
@@ -52,12 +54,12 @@ process BAKTA {
     tuple val(id), path(assembly)
 
   output:
+    tuple val("${id}"), path("${id}.faa"), emit: proteins_tuple
     path "${id}*"
-    tuple val(${id}), path "${id}.faa", emit: proteins_tuple
 
   script:
   """
-  run_bakta.sh ${id} $assembly ${task.cpus} /db
+  run_bakta.sh ${id} ${assembly} ${task.cpus} /db
   echo "BAKTA finished"
   """
 }
@@ -66,7 +68,7 @@ process BAKTA {
 process PFAMS {
   tag "${id}"
 
-  container params.docker_container_pfam
+  container params.docker_container_hmmer
   containerOptions "-v ${params.pfam_db}:/db:ro"
 
   publishDir "$outputBase/${id}/pfams", mode: 'copy', pattern: "${id}.*"
@@ -75,8 +77,8 @@ process PFAMS {
     tuple val(id), path(proteins)
 
   output:
-    tuple val("domtblout"), val(id), path("${id}.domtbl.tsv"), emit: domtblout
-    tuple val("tblout"), val(id), path("${id}.tbl.tsv"), emit: tblout
+    tuple val("domtblout"), val("${id}"), path("${id}.domtbl.tsv"), emit: domtblout
+    tuple val("tblout"), val("${id}"), path("${id}.tbl.tsv"), emit: tblout
 
   script:
   """
@@ -138,6 +140,5 @@ workflow {
 
   genomes_ch | BAKTA
   BAKTA.out.proteins_tuple | PFAMS
-  PFAMS.out.domtblout | PARSE_PFAMS
-  PFAMS.out.tblout | PARSE_PFAMS
+  PFAMS.out.domtblout.concat(PFAMS.out.tblout) | PARSE_PFAMS
 }

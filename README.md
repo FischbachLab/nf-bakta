@@ -27,15 +27,25 @@ This helper script will also recommend a job submission command that you can use
 
 ## Test
 
+### Local
+```bash
+nextflow run main.nf \
+    --seedfile test/local.seedfile.csv \
+    --project 00_Test \
+    --prefix 20240306-pfam
+```
+
+### Remote
+
 ```bash
 aws batch submit-job \
-    --job-name nf-bakta-dsl2-test \
+    --job-name nf-bakta-pfam-test \
     --job-queue priority-maf-pipelines \
     --job-definition nextflow-production \
     --container-overrides command=FischbachLab/nf-bakta,\
 "--seedfile","s3://genomics-workflow-core/Results/Bakta/00_Test/seedfiles/test_20221220_1.seedfile.csv",\
 "--project","00_Test",\
-"--prefix","20240306-dsl2"
+"--prefix","20240306-pfam"
 ```
 
 ## Bakta Database
