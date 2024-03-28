@@ -7,6 +7,12 @@ assembly=${2}
 cpus=${3}
 bakta_db=${4}
 
+# check if the baktadb directory is accessible
+if [[ ! -d "${bakta_db}" ]]; then
+    echo "Error: bakta_db directory not found: ${bakta_db}"
+    exit 1
+fi
+
 min_seqs=1
 num_seqs=$(grep -c '>' "${assembly}" || true)
 
