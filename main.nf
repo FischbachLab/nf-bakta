@@ -96,10 +96,10 @@ process PFAMS {
   """
 }
 
-process PARSE_PFAMS{
+process PARSE_PFAMS {
   tag "${id}"
 
-  container params.docker_container_pfam
+  container params.docker_container_aurumbio
 
   publishDir "$outputBase/${id}", mode: 'copy', pattern: "${id}.*"
 
