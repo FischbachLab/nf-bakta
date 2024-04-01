@@ -1,43 +1,33 @@
-ARG HMMER_VER="3.4"
+# Setup base image
+FROM mambaorg/micromamba:1.5.8 as app
 
-## Builder ##
-FROM ubuntu:jammy as builder
+USER root:root
+ENV PATH "/opt/conda/bin:$PATH"
 
-ARG HMMER_VER
-
-RUN apt-get update && apt-get install --no-install-recommends -y \
+# Install dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
-    build-essential &&\
+    procps \
+    ca-certificates && \
     apt-get autoclean && rm -rf /var/lib/apt/lists/*
+RUN  micromamba install --name base -c conda-forge -c bioconda -c default -y python=3.10 numpy polars pydantic pyhmmer \
+    && micromamba clean --all --yes \
+    && mkdir -p /opt/work
 
-RUN wget http://eddylab.org/software/hmmer/hmmer-${HMMER_VER}.tar.gz &&\
-    tar -xvf hmmer-${HMMER_VER}.tar.gz &&\
-    cd hmmer-${HMMER_VER} &&\
-    ./configure &&\
-    make && make install
+ENV PATH="/opt/conda/bin/:$PATH" \
+    LC_ALL=C
 
-## App ##
-FROM ubuntu:jammy as app
 
-ARG HMMER_VER
-
-LABEL base.image="ubuntu:jammy"
-LABEL dockerfile.version="1"
-LABEL software="HMMER"
-LABEL software.version="${HMMER_VER}"
-LABEL description="Biological sequence analysis using profile hidden Markov models"
-LABEL website="http://hmmer.org/"
-LABEL license="https://github.com/EddyRivasLab/hmmer/blob/master/LICENSE"
-LABEL maintainer="Kutluhan Incekara"
-LABEL maintainer.email="kutluhan.incekara@ct.gov"
-
-# get compiled binaries from builder
-COPY --from=builder /usr/local/bin/ /usr/local/bin/
-
-ENV LC_ALL=C
-
-# Set the working directory
-RUN mkdir -p /opt/work
 WORKDIR /opt/work
 
+# Metadata
+LABEL container.maintainer="Sunit Jain" \
+    container.base.image="continuumio/miniconda3" \
+    software.name="pyhmmer" \
+    software.description="Cython bindings and Python interface to HMMER3." \
+    software.website="https://github.com/althonos/pyhmmer" \
+    container.category="aligner"
+
+RUN chmod -R +rx ./
+# Set the default command
 CMD ["/bin/sh","-c","/bin/bash"]

@@ -1,5 +1,5 @@
 NAME=hmmer
-TAG:=3.4
+TAG:=pyhmmer_0_10_11
 REGISTRY=458432034220.dkr.ecr.us-west-2.amazonaws.com/$(NAME)
 
 all: build push run
@@ -18,4 +18,4 @@ latest:
 	docker image push $(REGISTRY):latest
 
 run:
-	docker container run --rm $(NAME):$(TAG) hmmsearch -h
+	docker container run --rm $(NAME):$(TAG)
