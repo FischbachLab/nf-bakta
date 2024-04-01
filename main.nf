@@ -46,7 +46,6 @@ process BAKTA {
   debug true
 
   container params.docker_container_bakta
-  containerOptions "-v ${params.bakta_db}:/db:ro"
 
   publishDir "$outputBase/${id}", mode: 'copy', pattern: "${id}.*"
 
@@ -59,7 +58,7 @@ process BAKTA {
 
   script:
   """
-  run_bakta.sh ${id} ${assembly} ${task.cpus} /db/db
+  run_bakta.sh ${id} ${assembly} ${task.cpus} ${params.bakta_db}/db
   echo "BAKTA finished"
   """
 }
