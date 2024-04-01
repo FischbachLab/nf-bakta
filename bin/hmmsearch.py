@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Description: This script is used to search for Pfam domains in the predicted proteins of the CDSs.
 import argparse
 import logging
