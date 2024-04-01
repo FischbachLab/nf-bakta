@@ -47,7 +47,7 @@ aws batch submit-job \
 "-r","pfam-annotation",\
 "--seedfile","s3://genomics-workflow-core/Results/Bakta/00_Test/seedfiles/test_20221220_1.seedfile.csv",\
 "--project","00_Test",\
-"--prefix","20240328-pfam"
+"--prefix","20240401-pfam"
 ```
 
 ## Bakta Database
@@ -88,3 +88,16 @@ docker container run \
     458432034220.dkr.ecr.us-west-2.amazonaws.com/bakta:1.9.3 \
     bakta_db update --db /db --tmp-dir /tmp
 ```
+
+## PFam Annotation Parsing
+
+References:
+
+- `hmmscan` vs `hmmsearch`: [Use hmmsearch](http://cryptogenomicon.org/hmmscan-vs-hmmsearch-speed-the-numerology.html) to annotate the proteins from the bakta pipeline. 
+
+- `pyhmmer`:
+    - [repo](https://github.com/althonos/pyhmmer)
+    - [Read the docs](https://pyhmmer.readthedocs.io/en/stable/)
+    - [Example of usage in Bakta](https://github.com/oschwengers/bakta/blob/d6443639958750c3bece5822e84978271d1a4dc7/bakta/features/cds.py#L106)
+
+- [Parsing `HMMsearch` output](https://dark.metagenomics.eu/pfam-annotation)
