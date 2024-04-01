@@ -168,24 +168,25 @@ def usage():
 
 
 def main():
-    # args = usage()
-    # protein_file = args.input
-    # output_prefix = args.output
+    args = usage()
+    protein_file = args.input
+    output_prefix = args.output
+    pfam_db = args.pfam_db
 
-    # pfam_db = args.pfam_db
-    # threads = args.threads
-    # max_evalue = args.max_evalue
-    # min_domain_coverage = args.min_domain_coverage
-    # min_overlap = args.min_overlap
+    threads = args.threads
+    max_evalue = args.max_evalue
+    min_domain_coverage = args.min_domain_coverage
+    min_overlap = args.min_overlap
 
-    protein_file = "test_data/proteins/Clostridium-sporogenes-ATCC-15579-MAF-2.faa"
-    output_prefix = "test_data/proteins/Clostridium-sporogenes-ATCC-15579-MAF-2"
+    ## TEST DATA
+    # protein_file = "test_data/proteins/Clostridium-sporogenes-ATCC-15579-MAF-2.faa"
+    # output_prefix = "test_data/proteins/Clostridium-sporogenes-ATCC-15579-MAF-2"
+    # pfam_db = "/mnt/efs/databases/HMMs/pfam/v36.0/Pfam-A.hmm"
 
-    pfam_db = "/mnt/efs/databases/HMMs/pfam/v36.0/Pfam-A.hmm"
-    threads = 12
-    max_evalue = 1e-5
-    min_domain_coverage = 0.4
-    min_overlap = 50
+    # threads = 12
+    # max_evalue = 1e-5
+    # min_domain_coverage = 0.4
+    # min_overlap = 50
 
     domtbl_output = f"{output_prefix}.hmmsearch_domtblout.tsv"
     processed_output = f"{output_prefix}.hmmsearch_all_hits.csv"
