@@ -54,10 +54,11 @@ aws batch submit-job \
 
 ```text
 v4.0 = ???
-v5.0 = 2023-02-20, DOI: 10.5281/zenodo.7669534
+v5.0, type=full, 2023-02-20, DOI: 10.5281/zenodo.7669534
+v5.1, type=full, 2024-01-19, DOI: 10.5281/zenodo.10522951
 ```
 
-The database for this pipeline is stored on our EFS at `/mnt/efs/databases/Bakta/db/v4.0`. This path is provided as the `bakta_db` parameter. Note that this path should not be staged within the pipleine, but just passed as a value. This is done because all containers have access to that path, i.e. it's already available/staged/mounted for the container to use.
+The database for this pipeline is stored on our EFS at `/mnt/efs/databases/Bakta/db/v5.0`. This path is provided as the `bakta_db` parameter. Note that this path should not be staged within the pipleine, but just passed as a value. This is done because all containers have access to that path, i.e. it's already available/staged/mounted for the container to use.
 
 ### Download new database
 
@@ -65,22 +66,25 @@ This was needed when Bakta moved from db schema v4.0 to v5.0.
 
 ```bash
 cd /mnt/efs/databases/Bakta/db
-mkdir v5.0
+mkdir v5
 docker container run \
     --rm \
-    -v /mnt/efs/databases/Bakta/db/v5.0:/db \
     -u $(id -u):$(id -g) \
-    public.ecr.aws/biocontainers/bakta:1.9.1--pyhdfd78af_0 \
+    -v /mnt/efs/databases/Bakta/db/v5:/db \
+    458432034220.dkr.ecr.us-west-2.amazonaws.com/bakta:1.9.3 \
     bakta_db download --output /db --type full
 ```
 
 ### Update existing database
 
 ```bash
+mkdir -p /mnt/efs/databases/Bakta/db/tmp
 cd /mnt/efs/databases/Bakta/db
 docker container run \
+-it \
     --rm \
-    -v /mnt/efs/databases/Bakta/db/v4.0:/db \
-    public.ecr.aws/biocontainers/bakta:1.9.1--pyhdfd78af_0 \
-    bakta_db update --db /db
+    -v /mnt/efs/databases/Bakta/db/v5:/db \
+    -v /mnt/efs/databases/Bakta/db/db_tmp:/bakta_tmp \
+    458432034220.dkr.ecr.us-west-2.amazonaws.com/bakta:1.9.3 \
+    bakta_db update --db /db --tmp-dir /tmp
 ```
