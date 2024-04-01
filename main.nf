@@ -42,6 +42,8 @@ def outputBase = "${params.outdir}/${params.project}/${params.prefix}"
 // Bakta
 process BAKTA {
   tag "${id}"
+  
+  debug true
 
   container params.docker_container_bakta
 
@@ -51,19 +53,42 @@ process BAKTA {
     tuple val(id), path(assembly)
 
   output:
+    tuple val("${id}"), path("${id}.faa"), emit: proteins_tuple
     path "${id}*"
 
   script:
   """
-  run_bakta.sh ${id} $assembly ${task.cpus} ${params.bakta_db}
+  run_bakta.sh ${id} ${assembly} ${task.cpus} ${params.bakta_db}/db
   echo "BAKTA finished"
   """
 }
 
+// PFam
+process PFAMS {
+  tag "${id}"
+
+  container params.docker_container_hmmer
+  // containerOptions "--volume ${params.pfam_db}:/db:ro"
+
+  publishDir "$outputBase/${id}/", mode: 'copy', pattern: "${id}.hmmsearch_tbl.csv"
+  publishDir "$outputBase/${id}/intermediate_pfam_outputs", mode: 'copy', pattern: "${id}.*tblout.tsv"
+  publishDir "$outputBase/${id}/intermediate_pfam_outputs", mode: 'copy', pattern: "${id}.*_hits.csv"
+
+  input:
+    tuple val(id), path(proteins)
+
+  output:
+    path("${id}.*")
+
+  script:
+  """
+  hmmsearch.py -i ${proteins} -o ${id} -d ${params.pfam_db}/Pfam-A.hmm --threads ${task.cpus} --max_evalue ${params.max_evalue} --min_domain_coverage ${params.min_domain_coverage} --min_overlap ${params.min_overlap}
+
+  echo "PFAM finished"
+  """
+}
 
 workflow {
-  // def fnaGlob = "${params.fastas}/*.${params.ext}"
-// log.info"""Searching for file at this location: $fnaGlob""".stripIndent()
   genomes_ch = Channel.from(
           file(
               params.seedfile
@@ -84,4 +109,5 @@ workflow {
       }
 
   genomes_ch | BAKTA
+  BAKTA.out.proteins_tuple | PFAMS
 }
