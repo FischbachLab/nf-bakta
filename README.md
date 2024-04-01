@@ -40,7 +40,7 @@ nextflow run main.nf \
 
 ```bash
 aws batch submit-job \
-    --job-name nf-bakta-pfam-test \
+    --job-name nf-bakta-pfam-test-3 \
     --job-queue priority-maf-pipelines \
     --job-definition nextflow-production \
     --container-overrides command=FischbachLab/nf-bakta,\
