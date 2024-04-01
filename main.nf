@@ -59,7 +59,7 @@ process BAKTA {
 
   script:
   """
-  run_bakta.sh ${id} ${assembly} ${task.cpus} /db
+  run_bakta.sh ${id} ${assembly} ${task.cpus} /db/db
   echo "BAKTA finished"
   """
 }
@@ -71,50 +71,22 @@ process PFAMS {
   container params.docker_container_hmmer
   containerOptions "-v ${params.pfam_db}:/db:ro"
 
-  publishDir "$outputBase/${id}/pfams", mode: 'copy', pattern: "${id}.*"
+  publishDir "$outputBase/${id}/", mode: 'copy', pattern: "${id}.hmmsearch_tbl.csv"
+  publishDir "$outputBase/${id}/intermediate_pfam_outputs", mode: 'copy', pattern: "${id}.*tblout.tsv"
+  publishDir "$outputBase/${id}/intermediate_pfam_outputs", mode: 'copy', pattern: "${id}.*_hits.csv"
 
   input:
     tuple val(id), path(proteins)
 
   output:
-    tuple val("domtblout"), val("${id}"), path("${id}.domtbl.tsv"), emit: domtblout
-    tuple val("tblout"), val("${id}"), path("${id}.tbl.tsv"), emit: tblout
+    tuple val("domtblout"), val("${id}"), path("${id}.domtbl.tsv")
+    tuple val("tblout"), val("${id}"), path("${id}.tbl.tsv")
 
   script:
   """
-  hmmsearch \\
-    --cut_ga \\
-    -Z 1000000 \\
-    --cpu ${task.cpus} \\
-    --acc \\
-    --noali \\
-    --notextw \\
-    --tblout ${id}.tbl.tsv \\
-    --domtblout ${id}.domtbl.tsv \\
-    -o HMMPfam.log \\
-    /db/Pfam-A.hmm ${proteins}
+  hmmsearch.py -i ${proteins} -o ${id} -d /db/Pfam-A.hmm --threads ${task.cpus} --max_evalue ${params.max_evalue} --min_domain_coverage ${params.min_domain_coverage} --min_overlap ${params.min_overlap}
 
   echo "PFAM finished"
-  """
-}
-
-process PARSE_PFAMS {
-  tag "${id}"
-
-  container params.docker_container_aurumbio
-
-  publishDir "$outputBase/${id}", mode: 'copy', pattern: "${id}.*"
-
-  input:
-    tuple val(format), val(id), path(input_file)
-
-  output:
-    path "${id}.*"
-
-  script:
-  """
-  parse_hmmsearch_output.py -f ${format} -i ${input_file} -o ${id}.cleaned_${format}.csv
-  echo "PARSE_PFAMS finished for ${input_file}"
   """
 }
 
@@ -138,7 +110,5 @@ workflow {
           r -> [r["genome_id"], [r["genome_path"]]]
       }
 
-  genomes_ch | BAKTA
-  BAKTA.out.proteins_tuple | PFAMS
-  PFAMS.out.domtblout.concat(PFAMS.out.tblout) | PARSE_PFAMS
+  genomes_ch | BAKTA.out.proteins_tuple | PFAMS
 }
