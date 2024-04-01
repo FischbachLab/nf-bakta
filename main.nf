@@ -110,5 +110,6 @@ workflow {
           r -> [r["genome_id"], [r["genome_path"]]]
       }
 
-  genomes_ch | BAKTA.out.proteins_tuple | PFAMS
+  genomes_ch | BAKTA
+  BAKTA.out.proteins_tuple | PFAMS
 }
