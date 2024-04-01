@@ -78,8 +78,7 @@ process PFAMS {
     tuple val(id), path(proteins)
 
   output:
-    tuple val("domtblout"), val("${id}"), path("${id}.domtbl.tsv")
-    tuple val("tblout"), val("${id}"), path("${id}.tbl.tsv")
+    path("${id}.*")
 
   script:
   """
