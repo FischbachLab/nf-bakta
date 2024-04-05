@@ -217,7 +217,7 @@ def main():
     dropped_by_thresholds = (
         hits.filter(
             (pl.col("evalue") > max_evalue)
-            & (pl.col("domain_cov") < min_domain_coverage)
+            | (pl.col("domain_cov") < min_domain_coverage)
         )
         .with_columns(
             pl.lit(f"'evalue > {max_evalue} or aa_cov < {min_domain_coverage}'").alias(
@@ -283,9 +283,16 @@ def main():
     log.info(
         f"Finally {final_df.get_column('feature_id').n_unique()} features were sucessfully annotated"
     )
-    all_features = hits.get_column("feature_id").unique()
+    dropped_features = drop_candidates.get_column("feature_id").unique()
+    all_viable_features = (
+        hits.filter(~pl.col("feature_id").is_in(dropped_features))
+        .get_column("feature_id")
+        .unique()
+    )
     final_features = final_df.get_column("feature_id").unique()
-    missing_features = all_features.filter(~all_features.is_in(final_features))
+    missing_features = all_viable_features.filter(
+        ~all_viable_features.is_in(final_features)
+    )
     log.info(f"Missing features: {missing_features.to_list()}")
 
     final_df.write_csv(final_output)
