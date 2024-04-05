@@ -44,7 +44,6 @@ aws batch submit-job \
     --job-queue priority-maf-pipelines \
     --job-definition nextflow-production \
     --container-overrides command=FischbachLab/nf-bakta,\
-"-r","pfam-annotation",\
 "--seedfile","s3://genomics-workflow-core/Results/Bakta/00_Test/seedfiles/test_20221220_1.seedfile.csv",\
 "--project","00_Test",\
 "--prefix","20240401-pfam"
