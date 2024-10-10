@@ -1,5 +1,5 @@
 NAME=hmmer
-TAG:=pyhmmer_0_10_11
+TAG:=pyhmmer_0_10_15
 REGISTRY=458432034220.dkr.ecr.us-west-2.amazonaws.com/$(NAME)
 
 all: build push run

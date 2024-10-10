@@ -1,5 +1,5 @@
 NAME=bakta
-TAG:=1.9.3
+TAG:=1.9.4
 REGISTRY=458432034220.dkr.ecr.us-west-2.amazonaws.com/$(NAME)
 
 all: build push run

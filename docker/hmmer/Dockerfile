@@ -1,6 +1,14 @@
 # Setup base image
 FROM mambaorg/micromamba:1.5.8 as app
 
+# Define the version of the software
+ARG PYTHON_VER="3.11"
+ARG PYHMMER_VER="0.10.15"
+ARG NUMPY_VER="1.26.4"
+ARG POLARS_VER="1.6.0"
+ARG PYDANTIC_VER="2.8.0"
+
+
 USER root:root
 ENV PATH "/opt/conda/bin:$PATH"
 
@@ -10,7 +18,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     procps \
     ca-certificates && \
     apt-get autoclean && rm -rf /var/lib/apt/lists/*
-RUN  micromamba install --name base -c conda-forge -c bioconda -c default -y python=3.10 numpy polars pydantic pyhmmer \
+RUN  micromamba install --name base -c conda-forge -c bioconda -c default -y \
+    python=${PYTHON_VER} \
+    numpy=${NUMPY_VER} \
+    polars=${POLARS_VER} \
+    pydantic=${PYDANTIC_VER} \
+    pyhmmer=${PYHMMER_VER} \
     && micromamba clean --all --yes \
     && mkdir -p /opt/work
 
