@@ -12,3 +12,5 @@
 
 - updated hmmsearch output is filtered to only report hits with a minimum domain coverage of 0.4. Any overlapping hits are compared and the one with the lowest e-value is reported.
 - added a stats file in hmmsearch to track if any features were completely removed due to the filtering step.
+- updated the bakta version to v1.9.4
+- updated the pyhmmer version from v0.10.11 to v0.10.15
