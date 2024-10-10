@@ -1,9 +1,14 @@
 # NF-BAKTA
 
+Bakta version = 1.9.4
+Bakta database version = 5.1
+PyHmmer version = 0.10.15
+PFamA version = 36
+
 ## Python Environment
 
 ```bash
-conda create -n bakta -c conda-forge python=3.11 cloudpathlib-s3 pandas notebook fsspec s3fs=2023.3.0
+conda create -n bakta -c conda-forge python=3.11 cloudpathlib-s3 pandas notebook fsspec s3fs
 ```
 
 ## Seedfile format
