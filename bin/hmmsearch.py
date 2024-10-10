@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-# Description: This script is used to search for Pfam domains in the predicted proteins of the CDSs.
+# Description: This script is used to search for Pfam domains in the predicted proteins of the CDSs
+# and filter them such that only the best hit is retained for each region on a protein.
 import argparse
 import logging
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from typing import Optional, Sequence
 
 import polars as pl
@@ -95,8 +96,15 @@ def compute_overlap(segment1, segment2):
     # Example usage:
     segment1 = (10, 40)
     segment2 = (20, 30)
-    print(calculate_percentage_overlap(segment1, segment2))
+    compute_overlap(segment1, segment2))
+    >>> 100.0
     """
+    # 0  10 20 30 40
+    # |==|==|==|==| segment1
+    #       |==|    segment2
+
+    # => 10/10 * 100 = 100.0
+
     start1, end1 = segment1
     start2, end2 = segment2
 
@@ -147,12 +155,12 @@ def usage():
         default=12,
         type=int,
     )
-    parser.add_argument(
-        "--max_evalue",
-        help="Maximum evalue threshold",
-        default=1e-5,
-        type=float,
-    )
+    # parser.add_argument(
+    #     "--max_evalue",
+    #     help="Maximum evalue threshold",
+    #     default=1e-5,
+    #     type=float,
+    # )
     parser.add_argument(
         "--min_domain_coverage",
         help="Minimum domain coverage threshold [0-1]",
@@ -175,7 +183,7 @@ def main():
     pfam_db = args.pfam_db
 
     threads = args.threads
-    max_evalue = args.max_evalue
+    # max_evalue = args.max_evalue
     min_domain_coverage = args.min_domain_coverage
     min_overlap = args.min_overlap
 
@@ -185,23 +193,24 @@ def main():
     # pfam_db = "/mnt/efs/databases/HMMs/pfam/v36.0/Pfam-A.hmm"
 
     # threads = 12
-    # max_evalue = 1e-5
+    # max_evalue = 1e-5 ## no longer supported
     # min_domain_coverage = 0.4
     # min_overlap = 50
 
     domtbl_output = f"{output_prefix}.hmmsearch_domtblout.tsv"
     processed_output = f"{output_prefix}.hmmsearch_all_hits.csv"
     drop_candidates_output = f"{output_prefix}.hmmsearch_dropped_hits.csv"
+    stats_output = f"{output_prefix}.hmmsearch_stats.tsv"
     final_output = f"{output_prefix}.hmmsearch_tbl.csv"
 
-    hits = (
-        pl.DataFrame(run_hmmsearch(protein_file, pfam_db, domtbl_output, threads))
-        .sort(["feature_id", "pfam_start"], descending=[False, False])
-        .with_row_index("row_index")
-        .with_columns(pl.col("row_index").cast(pl.Int32))
-    )
+    stats = defaultdict(str)
 
-    log.info(f"hits={hits.height}")
+    hits = pl.DataFrame(
+        run_hmmsearch(protein_file, pfam_db, domtbl_output, threads)
+    ).sort(["feature_id", "pfam_start"], descending=[False, False])
+    hits.write_csv(processed_output)
+    log.debug(f"hits={hits.height}")
+    stats["num_rows_original_output"] = hits.height
 
     """
     group_by feature_id:
@@ -209,33 +218,20 @@ def main():
         compute_overlap with the remaining rows in the group
         if overlap > 0.5
             keep the row with the lower evalue
-        else
-            keep the row
     """
     drop = []
-
-    dropped_by_thresholds = (
-        hits.filter(
-            (pl.col("evalue") > max_evalue)
-            | (pl.col("domain_cov") < min_domain_coverage)
-        )
-        .with_columns(
-            pl.lit(f"'evalue > {max_evalue} or aa_cov < {min_domain_coverage}'").alias(
-                "reason"
-            )
-        )
-        .to_dicts()
+    hits = (
+        hits.filter(pl.col("domain_cov") >= min_domain_coverage)
+        .with_row_index("row_index")
+        .sort(["feature_id", "row_index"], descending=[False, False])
     )
-    drop.extend(dropped_by_thresholds)
+    stats["num_rows_after_dom_cov_filter"] = hits.height
 
-    filtered_hits = hits.filter(
-        (pl.col("evalue") <= max_evalue) & (pl.col("domain_cov") >= min_domain_coverage)
-    )
-    for protein_hit in filtered_hits.partition_by("feature_id"):
+    for protein_hit in hits.partition_by("feature_id"):
         hit = protein_hit.to_dicts()
         for i, row in enumerate(hit):
             for j, row2 in enumerate(hit):
-                if i == j:
+                if j <= i:
                     continue
                 overlap = compute_overlap(
                     (row["pfam_start"], row["pfam_end"]),
@@ -244,25 +240,20 @@ def main():
                 if overlap > min_overlap:
                     # pick the one with the lower evalue
                     if row["evalue"] < row2["evalue"]:
-                        row["reason"] = f"'Overlap > {min_overlap}%; lower evalue (R2)'"
+                        row2["reason"] = f"Overlaps: {row['pfam_id']}"
                         drop.append(row2)
                     else:
-                        row["reason"] = f"'Overlap > {min_overlap}%; lower evalue (R1)'"
+                        row["reason"] = f"Overlaps: {row2['pfam_id']}"
                         drop.append(row)
 
-    drop_candidates = (
-        pl.DataFrame(drop)
-        .with_columns(pl.col("row_index").cast(pl.Int32))
-        .unique()
-        .sort(["feature_id", "pfam_start"], descending=[False, False])
-    )
-    log.info(f"drop_candidates={drop_candidates.height}")
-
-    hits.write_csv(processed_output)
+    drop_candidates = pl.DataFrame(drop).unique()
+    drop_rows = drop_candidates.get_column("row_index").unique()
+    log.debug(f"drop_candidates={len(drop_rows)}")
+    stats["num_rows_dropped"] = len(drop_rows)
     drop_candidates.write_csv(drop_candidates_output)
 
     final_df = (
-        hits.join(drop_candidates, on="row_index", how="anti")
+        hits.filter(~pl.col("row_index").is_in(drop_rows))
         .rename({"pfam_id": "pfam_id_version"})
         .with_columns(
             pl.col("pfam_id_version")
@@ -272,17 +263,17 @@ def main():
             .alias("pfam_id"),
         )
     )
-    log.info(f"final_df={final_df.height}")
+    final_df.write_csv(final_output)
+    log.debug(f"final_df={final_df.height}")
+    stats["num_rows_final"] = final_df.height
 
-    log.info(
-        f"Orignal hmmsearch output annotated {hits.get_column('feature_id').n_unique()} features"
-    )
-    log.info(
-        f"Filtering marked {drop_candidates.get_column('feature_id').n_unique()} features"
-    )
-    log.info(
-        f"Finally {final_df.get_column('feature_id').n_unique()} features were sucessfully annotated"
-    )
+    stats["original_features_w_pfams"] = hits.get_column("feature_id").n_unique()
+    stats["dropped_features_w_pfams"] = drop_candidates.get_column(
+        "feature_id"
+    ).n_unique()
+    stats["final_features_w_pfams"] = final_df.get_column("feature_id").n_unique()
+
+    ## Did we completely miss/remove any features?
     dropped_features = drop_candidates.get_column("feature_id").unique()
     all_viable_features = (
         hits.filter(~pl.col("feature_id").is_in(dropped_features))
@@ -293,9 +284,16 @@ def main():
     missing_features = all_viable_features.filter(
         ~all_viable_features.is_in(final_features)
     )
-    log.info(f"Missing features: {missing_features.to_list()}")
 
-    final_df.write_csv(final_output)
+    stats["all_viable_features"] = all_viable_features.n_unique()
+    stats["missing_features_num"] = missing_features.n_unique()
+    stats["missing_features"] = ",".join(missing_features.to_list())
+
+    log.info(f"Stats: {stats}")
+    # save stats to file
+    with open(stats_output, "w") as f:
+        for key, value in stats.items():
+            f.write(f"{key}\t{value}\n")
 
 
 if __name__ == "__main__":

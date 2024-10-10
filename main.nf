@@ -71,7 +71,7 @@ process PFAMS {
   // containerOptions "--volume ${params.pfam_db}:/db:ro"
 
   publishDir "$outputBase/${id}/", mode: 'copy', pattern: "${id}.hmmsearch_tbl.csv"
-  publishDir "$outputBase/${id}/intermediate_pfam_outputs", mode: 'copy', pattern: "${id}.*tblout.tsv"
+  publishDir "$outputBase/${id}/intermediate_pfam_outputs", mode: 'copy', pattern: "${id}.*.tsv"
   publishDir "$outputBase/${id}/intermediate_pfam_outputs", mode: 'copy', pattern: "${id}.*_hits.csv"
 
   input:
@@ -82,7 +82,7 @@ process PFAMS {
 
   script:
   """
-  hmmsearch.py -i ${proteins} -o ${id} -d ${params.pfam_db}/Pfam-A.hmm --threads ${task.cpus} --max_evalue ${params.max_evalue} --min_domain_coverage ${params.min_domain_coverage} --min_overlap ${params.min_overlap}
+  hmmsearch.py -i ${proteins} -o ${id} -d ${params.pfam_db}/Pfam-A.hmm --threads ${task.cpus} --min_domain_coverage ${params.min_domain_coverage} --min_overlap ${params.min_overlap}
 
   echo "PFAM finished"
   """
