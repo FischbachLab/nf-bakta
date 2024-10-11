@@ -24,8 +24,8 @@ if (( num_seqs >= min_seqs )); then
     --compliant \
     --threads "${cpus}" \
     "${assembly}"
-    # --skip-plot \
 
+    # create a sha256 checksum for the assembly
     sha256sum "${assembly}" &> "${assembly_id}.sha256"
 else
     echo "${assembly} contains ${num_seqs} sequences. Cannot process further"
