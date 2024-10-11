@@ -46,6 +46,7 @@ process BAKTA {
   debug true
 
   container params.docker_container_bakta
+  // containerOptions "--volume ${params.bakta_db}/db:/db:ro"
 
   publishDir "$outputBase/${id}", mode: 'copy', pattern: "${id}.*"
 
