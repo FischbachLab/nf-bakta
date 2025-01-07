@@ -3,3 +3,4 @@
 work/
 .vscode
 **/test_data/**
+**/standalone
