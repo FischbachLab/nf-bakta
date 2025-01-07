@@ -123,7 +123,7 @@ def compute_overlap(segment1, segment2):
     length_shorter_segment = min(end1 - start1, end2 - start2)
 
     # Calculate percentage overlap
-    percentage_overlap = (overlap_length / length_shorter_segment) * 100
+    percentage_overlap = overlap_length / length_shorter_segment
 
     return percentage_overlap
 
@@ -131,19 +131,16 @@ def compute_overlap(segment1, segment2):
 def usage():
     parser = argparse.ArgumentParser(description="Pfam domain search")
     parser.add_argument(
-        "-i",
-        "--input",
+        "--faa",
         help="Input protein file in fasta format",
         required=True,
     )
     parser.add_argument(
-        "-o",
-        "--output",
-        help="Output file prefix",
+        "--genome_id",
+        help="genome_id, to be used as output file prefix",
         required=True,
     )
     parser.add_argument(
-        "-d",
         "--pfam_db",
         help="Pfam database file",
         required=True,
@@ -169,8 +166,8 @@ def usage():
     )
     parser.add_argument(
         "--min_overlap",
-        help="Minimum overlap threshold [0-100]",
-        default=50,
+        help="Minimum overlap threshold [0-1]",
+        default=0.5,
         type=float,
     )
     return parser.parse_args()
@@ -196,6 +193,9 @@ def main():
     # max_evalue = 1e-5 ## no longer supported
     # min_domain_coverage = 0.4
     # min_overlap = 50
+
+    assert 0 <= min_domain_coverage <= 1, "min_domain_coverage must be between 0 and 1"
+    assert 0 <= min_overlap <= 1, "min_overlap must be between 0 and 1"
 
     domtbl_output = f"{output_prefix}.hmmsearch_domtblout.tsv"
     processed_output = f"{output_prefix}.hmmsearch_all_hits.csv"

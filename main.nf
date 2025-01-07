@@ -83,7 +83,7 @@ process PFAMS {
 
   script:
   """
-  hmmsearch.py -i ${proteins} -o ${id} -d ${params.pfam_db}/Pfam-A.hmm --threads ${task.cpus} --min_domain_coverage ${params.min_domain_coverage} --min_overlap ${params.min_overlap}
+  hmmsearch.py --faa ${proteins} --genome_id ${id} --pfam_db ${params.pfam_db}/Pfam-A.hmm --threads ${task.cpus} --min_domain_coverage ${params.min_domain_coverage} --min_overlap ${params.min_overlap}
 
   echo "PFAM finished"
   """
